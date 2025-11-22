@@ -4,7 +4,8 @@ import com.finance.wallet.v12.domain.OperationType;
 import com.finance.wallet.v12.domain.Transaction;
 import com.finance.wallet.v12.domain.Wallet;
 import com.finance.wallet.v12.dto.request.TransactionDepositDTO;
-import com.finance.wallet.v12.dto.response.TransactionDepositResponseDTO;
+import com.finance.wallet.v12.dto.request.TransactionTransferDTO;
+import com.finance.wallet.v12.dto.response.TransactionResponseDTO;
 import com.finance.wallet.v12.repository.TransactionRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class TransactionService {
@@ -28,25 +28,59 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionDepositResponseDTO deposit(TransactionDepositDTO transation)
+    public TransactionResponseDTO deposit(TransactionDepositDTO transation)
     {
         Wallet walletReceiver = this.walletRepository.findById(transation.walletReceiver())
-                .orElseThrow(() -> new RuntimeException("Carteira não encontrada, deposito cancelado."));
+                .orElseThrow(() -> new RuntimeException("Carteira receptora não encontrada, deposito cancelado."));
 
         Transaction depositTransaction = new Transaction();
         depositTransaction.setWalletReceiver(walletReceiver);
         depositTransaction.setAmount(transation.amount());
         depositTransaction.setCreatedAt(LocalDateTime.now());
         depositTransaction.setOperationType(OperationType.DEPOSIT);
-        System.out.println("TIPO DE OPERAÇÃO => " + depositTransaction.getOperationType());
         this.transactionRepository.save(depositTransaction);
-
-        System.out.println("UUID deposit => " + depositTransaction.getId());
 
         BigDecimal newAmount = walletReceiver.getBalance().add(transation.amount());
         walletReceiver.setBalance(newAmount);
         this.walletRepository.save(walletReceiver);
-        return TransactionDepositResponseDTO.fromEntity(depositTransaction);
+        return TransactionResponseDTO.fromEntity(depositTransaction);
+    }
+
+    @Transactional
+    public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO)
+    {
+        Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
+                .orElseThrow(() -> new RuntimeException("Carteira remetente não encontrada, transferencia cancelada."));
+
+        if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
+        {
+            throw new RuntimeException("Impossível transferir dinheiro para mesma carteira, transação negada!");
+        }
+
+        Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
+                .orElseThrow(() -> new RuntimeException("Carteira destinatária não encontrada, transferencia cancelada"));
+
+        BigDecimal walletSenderNewBalance = walletSender.getBalance().subtract(transferDTO.amount());
+
+        if(walletSenderNewBalance.compareTo(BigDecimal.ZERO) < 0)
+        {
+            throw new RuntimeException("Valor de transferência maior que saldo em conta, transação negada!");
+        }
+
+        walletSender.setBalance(walletSender.getBalance().subtract(transferDTO.amount()));
+        walletReceiver.setBalance(walletReceiver.getBalance().add(transferDTO.amount()));
+        this.walletRepository.save(walletReceiver);
+        this.walletRepository.save(walletSender);
+
+        Transaction transferTransaction = new Transaction();
+        transferTransaction.setWalletSender(walletSender);
+        transferTransaction.setWalletReceiver(walletReceiver);
+        transferTransaction.setAmount(transferDTO.amount());
+        transferTransaction.setCreatedAt(LocalDateTime.now());
+        transferTransaction.setOperationType(OperationType.TRANSFER);
+        this.transactionRepository.save(transferTransaction);
+
+        return TransactionResponseDTO.fromEntity(transferTransaction);
     }
 
 }
