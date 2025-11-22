@@ -9,15 +9,23 @@ import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
-@RequiredArgsConstructor
+@Service
 public class UserService {
 
-    private UserRepository userRepository;
-    private WalletRepository walletRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, WalletRepository walletRepository, PasswordEncoder passwordEncoder)
+    {
+        this.userRepository = userRepository;
+        this.walletRepository = walletRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public UserResponseDTO create(UserCreateDTO userCreateDTO)
