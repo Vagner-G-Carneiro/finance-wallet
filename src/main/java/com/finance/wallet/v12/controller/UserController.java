@@ -1,7 +1,7 @@
 package com.finance.wallet.v12.controller;
 
-import com.finance.wallet.v12.dto.UserCreateDTO;
-import com.finance.wallet.v12.dto.UserResponseDTO;
+import com.finance.wallet.v12.dto.request.UserCreateDTO;
+import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

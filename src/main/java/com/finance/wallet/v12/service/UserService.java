@@ -2,12 +2,11 @@ package com.finance.wallet.v12.service;
 
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
-import com.finance.wallet.v12.dto.UserCreateDTO;
-import com.finance.wallet.v12.dto.UserResponseDTO;
+import com.finance.wallet.v12.dto.request.UserCreateDTO;
+import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.repository.UserRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,5 +50,8 @@ public class UserService {
 
         return UserResponseDTO.fromEntity(savedUser);
     }
+
+    /*@Transactional
+    public */
 
 }
