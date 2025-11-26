@@ -6,6 +6,8 @@ import com.finance.wallet.v12.domain.Wallet;
 import com.finance.wallet.v12.dto.request.TransactionDepositDTO;
 import com.finance.wallet.v12.dto.request.TransactionTransferDTO;
 import com.finance.wallet.v12.dto.response.TransactionResponseDTO;
+import com.finance.wallet.v12.infra.exceptions.V12TransactionException;
+import com.finance.wallet.v12.infra.exceptions.V12WalletException;
 import com.finance.wallet.v12.repository.TransactionRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
@@ -30,8 +32,8 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDTO deposit(TransactionDepositDTO transation)
     {
-        Wallet walletReceiver = this.walletRepository.findById(transation.walletReceiver())
-                .orElseThrow(() -> new RuntimeException("Carteira receptora não encontrada, deposito cancelado."));
+        Wallet walletReceiver = this.walletRepository.findByIdWithLock(transation.walletReceiver())
+                .orElseThrow(() -> new V12WalletException("Carteira destinatária não encontrada."));
 
         Transaction depositTransaction = new Transaction();
         depositTransaction.setWalletReceiver(walletReceiver);
@@ -50,21 +52,21 @@ public class TransactionService {
     public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO)
     {
         Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
-                .orElseThrow(() -> new RuntimeException("Carteira remetente não encontrada, transferencia cancelada."));
+                .orElseThrow(() -> new V12WalletException("Carteira remetente não encontrada, transferencia cancelada."));
 
         if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
         {
-            throw new RuntimeException("Impossível transferir dinheiro para mesma carteira, transação negada!");
+            throw new V12TransactionException("Impossível transferir dinheiro da própria carteira para ela mesma, transação negada!");
         }
 
         Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
-                .orElseThrow(() -> new RuntimeException("Carteira destinatária não encontrada, transferencia cancelada"));
+                .orElseThrow(() -> new V12WalletException("Carteira destinatária não encontrada, transferencia cancelada"));
 
         BigDecimal walletSenderNewBalance = walletSender.getBalance().subtract(transferDTO.amount());
 
         if(walletSenderNewBalance.compareTo(BigDecimal.ZERO) < 0)
         {
-            throw new RuntimeException("Valor de transferência maior que saldo em conta, transação negada!");
+            throw new V12TransactionException("Valor de transferência maior que saldo em conta, transação negada!");
         }
 
         walletSender.setBalance(walletSender.getBalance().subtract(transferDTO.amount()));
