@@ -1,0 +1,1 @@
+CREATE CAST (character varying AS operations_types) WITH INOUT AS IMPLICIT;

@@ -2,31 +2,39 @@ package com.finance.wallet.v12.service;
 
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
-import com.finance.wallet.v12.dto.UserCreateDTO;
-import com.finance.wallet.v12.dto.UserResponseDTO;
+import com.finance.wallet.v12.dto.request.UserCreateDTO;
+import com.finance.wallet.v12.dto.response.UserResponseDTO;
+import com.finance.wallet.v12.infra.exceptions.V12UserException;
 import com.finance.wallet.v12.repository.UserRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
-@RequiredArgsConstructor
+@Service
 public class UserService {
 
-    private UserRepository userRepository;
-    private WalletRepository walletRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, WalletRepository walletRepository, PasswordEncoder passwordEncoder)
+    {
+        this.userRepository = userRepository;
+        this.walletRepository = walletRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public UserResponseDTO create(UserCreateDTO userCreateDTO)
     {
         if(this.userRepository.findByCpf(userCreateDTO.cpf()).isPresent()) {
-            throw new RuntimeException("Este cpf já está cadastrado.");
+            throw new V12UserException("Este cpf já está cadastrado.");
         }
         if(this.userRepository.findByEmail(userCreateDTO.email()).isPresent()) {
-            throw new RuntimeException("Este email já está cadastrado.");
+            throw new V12UserException("Este email já está cadastrado.");
         }
 
         User newUser = new User();
@@ -43,5 +51,8 @@ public class UserService {
 
         return UserResponseDTO.fromEntity(savedUser);
     }
+
+    /*@Transactional
+    public */
 
 }
