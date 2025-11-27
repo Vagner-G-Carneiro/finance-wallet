@@ -20,7 +20,7 @@ CREATE TYPE operations_types AS ENUM ('DEPOSIT', 'TRANSFER', 'REFUND');
 CREATE TABLE transactions (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     wallet_sender_id UUID REFERENCES wallets(id),
-    wallet_receiver_id REFERENCES wallets(id) NOT NULL,
+    wallet_receiver_id UUID REFERENCES wallets(id) NOT NULL,
     amount DECIMAL(19,4) NOT NULL CHECK (amount > 0),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     operation_type operations_types NOT NULL
