@@ -31,10 +31,10 @@ public class UserService {
     public UserResponseDTO create(UserCreateDTO userCreateDTO)
     {
         if(this.userRepository.findByCpf(userCreateDTO.cpf()).isPresent()) {
-            throw new V12UserException("Este cpf já está cadastrado.");
+            throw V12UserException.businessRule("Este cpf já está cadastrado.");
         }
         if(this.userRepository.findByEmail(userCreateDTO.email()).isPresent()) {
-            throw new V12UserException("Este email já está cadastrado.");
+            throw V12UserException.businessRule("Este email já está cadastrado.");
         }
 
         User newUser = new User();

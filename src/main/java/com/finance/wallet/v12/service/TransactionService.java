@@ -33,7 +33,7 @@ public class TransactionService {
     public TransactionResponseDTO deposit(TransactionDepositDTO transation)
     {
         Wallet walletReceiver = this.walletRepository.findByIdWithLock(transation.walletReceiver())
-                .orElseThrow(() -> new V12WalletException("Carteira destinatária não encontrada."));
+                .orElseThrow(() -> V12WalletException.notFound("Carteira destinatária não encontrada."));
 
         Transaction depositTransaction = new Transaction();
         depositTransaction.setWalletReceiver(walletReceiver);
@@ -52,21 +52,21 @@ public class TransactionService {
     public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO)
     {
         Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
-                .orElseThrow(() -> new V12WalletException("Carteira remetente não encontrada, transferencia cancelada."));
+                .orElseThrow(() -> V12WalletException.notFound("Carteira remetente não encontrada, transferencia cancelada."));
 
         if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
         {
-            throw new V12TransactionException("Impossível transferir dinheiro da própria carteira para ela mesma, transação negada!");
+            throw V12TransactionException.businessRule("Impossível transferir dinheiro da própria carteira para ela mesma, transação negada!");
         }
 
         Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
-                .orElseThrow(() -> new V12WalletException("Carteira destinatária não encontrada, transferencia cancelada"));
+                .orElseThrow(() -> V12WalletException.businessRule("Carteira destinatária não encontrada, transferencia cancelada"));
 
         BigDecimal walletSenderNewBalance = walletSender.getBalance().subtract(transferDTO.amount());
 
         if(walletSenderNewBalance.compareTo(BigDecimal.ZERO) < 0)
         {
-            throw new V12TransactionException("Valor de transferência maior que saldo em conta, transação negada!");
+            throw V12TransactionException.businessRule("Valor de transferência maior que saldo em conta, transação negada!");
         }
 
         walletSender.setBalance(walletSender.getBalance().subtract(transferDTO.amount()));
