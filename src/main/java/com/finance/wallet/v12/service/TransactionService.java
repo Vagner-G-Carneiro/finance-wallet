@@ -9,23 +9,30 @@ import com.finance.wallet.v12.dto.response.TransactionResponseDTO;
 import com.finance.wallet.v12.infra.exceptions.V12TransactionException;
 import com.finance.wallet.v12.infra.exceptions.V12WalletException;
 import com.finance.wallet.v12.repository.TransactionRepository;
+import com.finance.wallet.v12.repository.UserRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class TransactionService {
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
-    public TransactionService(WalletRepository walletRepository, TransactionRepository transactionRepository)
+    public TransactionService(WalletRepository walletRepository, TransactionRepository transactionRepository, UserRepository userRepository)
     {
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
 
     }
 
@@ -83,6 +90,12 @@ public class TransactionService {
         this.transactionRepository.save(transferTransaction);
 
         return TransactionResponseDTO.fromEntity(transferTransaction);
+    }
+
+    public Page<TransactionResponseDTO> bankStatement(UUID walletId, Pageable pageable)
+    {
+        Page <Transaction> pageEntitys = this.transactionRepository.findBankStatement(walletId, pageable);
+        return pageEntitys.map(TransactionResponseDTO::fromEntity);
     }
 
 }
