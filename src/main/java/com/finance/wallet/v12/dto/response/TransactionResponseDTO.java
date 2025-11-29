@@ -20,7 +20,7 @@ public record TransactionResponseDTO(
         return new TransactionResponseDTO(
                 transaction.getId(),
                 transaction.getWalletReceiver().getId(),
-                transaction.getWalletSender().getId() != null ?
+                transaction.getWalletSender() != null ?
                         transaction.getWalletSender().getId() : null,
                 transaction.getAmount(),
                 transaction.getCreatedAt(),
