@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado ao lado do servidor. Contate o Suporte.");
         problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
         problem.setType(URI.create("v12bank/error/global/exceptions"));
-        log.error("EXCEPTION => {}", exception.getMessage());
+        log.error("EXCEPTION => {}", exception.getMessage(), exception);
         return problem;
     }
 
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado ao lado do servidor. Contate o Suporte.");
         problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
         problem.setType(URI.create("v12bank/error/global/runtime"));
-        log.error("EXCEPTION RUN-TIME=> {}", run.getMessage());
+        log.error("EXCEPTION RUN-TIME=> {}", run.getMessage(), run);
         return problem;
     }
 
