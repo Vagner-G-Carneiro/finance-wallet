@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -50,6 +51,12 @@ public class UserService {
         this.walletRepository.save(newWallet);
 
         return UserResponseDTO.fromEntity(savedUser);
+    }
+
+    public User findUser(UUID userId)
+    {
+        return this.userRepository.findById(userId).orElseThrow(() ->
+                V12UserException.notFound("Erro ao encontrar usuário solicitado."));
     }
 
     /*@Transactional
