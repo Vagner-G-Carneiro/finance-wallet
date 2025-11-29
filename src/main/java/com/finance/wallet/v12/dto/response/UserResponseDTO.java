@@ -1,4 +1,4 @@
-package com.finance.wallet.v12.dto;
+package com.finance.wallet.v12.dto.response;
 
 import com.finance.wallet.v12.domain.User;
 
