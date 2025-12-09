@@ -52,14 +52,4 @@ public class UserService {
 
         return UserResponseDTO.fromEntity(savedUser);
     }
-
-    public User findUser(UUID userId)
-    {
-        return this.userRepository.findById(userId).orElseThrow(() ->
-                V12UserException.notFound("Erro ao encontrar usuário solicitado."));
-    }
-
-    /*@Transactional
-    public */
-
 }

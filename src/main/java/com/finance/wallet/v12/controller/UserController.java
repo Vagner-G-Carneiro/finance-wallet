@@ -21,8 +21,7 @@ public class UserController {
         this.userService = userService;
     }
 
-
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserCreateDTO data, UriComponentsBuilder uriComponentsBuilder)
     {
         UserResponseDTO newUser = this.userService.create(data);
