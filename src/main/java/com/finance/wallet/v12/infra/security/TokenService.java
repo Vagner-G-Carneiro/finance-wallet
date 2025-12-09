@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -17,33 +19,37 @@ public class TokenService {
     private String secretKey;
     public String generateToken(User user)
     {
-        System.out.println("\n\nSECRET KEY = " + secretKey);
-        Algorithm algorithm = Algorithm.HMAC256(secretKey);
-        return JWT.create()
-                .withIssuer("v12-finance-wallet")
-                .withSubject(user.getId().toString())
-                .withIssuedAt(generateExpirationDate())
-                .sign(algorithm);
+        try{
+            Algorithm algorithm = Algorithm.HMAC256(secretKey);
+            return JWT.create()
+                    .withIssuer("v12-finance-wallet")
+                    .withSubject(user.getEmail())
+                    .withExpiresAt(generateExpirationDate())
+                    .sign(algorithm);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Erro ao gerar token", e);
+        }
     }
 
-    public String decodeToken(String token)
+    public String validateToken(String token)
     {
         try
         {
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            return JWT.require(algorithm)
+            String decodificado =  JWT.require(algorithm)
                     .withIssuer("v12-finance-wallet")
-                    .acceptExpiresAt(0)
                     .build()
                     .verify(token)
                     .getSubject();
+            return decodificado;
         } catch (JWTVerificationException e) {
+            System.out.println("ERRO DE EXCESÃO => " + e);
             return "";
         }
     }
 
     private Instant generateExpirationDate()
     {
-        return Instant.now().plus(20, ChronoUnit.MINUTES);
+        return LocalDateTime.now().plusMinutes(20).toInstant(ZoneOffset.of("-03:00"));
     }
 }
