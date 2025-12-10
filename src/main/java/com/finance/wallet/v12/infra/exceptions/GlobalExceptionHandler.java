@@ -1,8 +1,10 @@
 package com.finance.wallet.v12.infra.exceptions;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -79,4 +81,23 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(JWTVerificationException.class)
+    public ProblemDetail handleJWTVerificationException(JWTVerificationException run)
+    {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Oops, seu token expirou, inicie uma nova sessão!.");
+        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setType(URI.create("v12bank/error/auth"));
+        log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException run)
+    {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Verifique o formato de entrada para valor e tente novamente!");
+        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setType(URI.create("v12bank/error/auth"));
+        log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
+        return problem;
+    }
 }
