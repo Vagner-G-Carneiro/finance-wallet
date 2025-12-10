@@ -43,8 +43,7 @@ public class TokenService {
                     .getSubject();
             return decodificado;
         } catch (JWTVerificationException e) {
-            System.out.println("ERRO DE EXCESÃO => " + e);
-            return "";
+            throw new JWTVerificationException(e.getMessage());
         }
     }
 

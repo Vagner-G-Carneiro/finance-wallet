@@ -2,6 +2,7 @@ package com.finance.wallet.v12.service;
 
 import com.finance.wallet.v12.domain.OperationType;
 import com.finance.wallet.v12.domain.Transaction;
+import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
 import com.finance.wallet.v12.dto.request.TransactionDepositDTO;
 import com.finance.wallet.v12.dto.request.TransactionTransferDTO;
@@ -14,7 +15,6 @@ import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -56,10 +56,15 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO)
+    public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO, User loggedUser)
     {
         Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
                 .orElseThrow(() -> V12WalletException.notFound("Carteira remetente não encontrada, transferencia cancelada."));
+
+        if(!walletSender.getUser().getId().equals(loggedUser.getId()))
+        {
+            throw V12WalletException.businessRule("Você só pode fazer tranferencias da sua própria carteira!");
+        }
 
         if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
         {
@@ -69,9 +74,12 @@ public class TransactionService {
         Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
                 .orElseThrow(() -> V12WalletException.businessRule("Carteira destinatária não encontrada, transferencia cancelada"));
 
-        BigDecimal walletSenderNewBalance = walletSender.getBalance().subtract(transferDTO.amount());
+        if(walletSender.getBalance().compareTo(BigDecimal.ZERO) <= 0)
+        {
+            throw V12TransactionException.businessRule("Sem saldo suficiente para realizar a tranferencia, transação negada!");
+        }
 
-        if(walletSenderNewBalance.compareTo(BigDecimal.ZERO) < 0)
+        if(walletSender.getBalance().subtract(transferDTO.amount()).compareTo(BigDecimal.ZERO) < 0)
         {
             throw V12TransactionException.businessRule("Valor de transferência maior que saldo em conta, transação negada!");
         }
@@ -92,8 +100,17 @@ public class TransactionService {
         return TransactionResponseDTO.fromEntity(transferTransaction);
     }
 
-    public Page<TransactionResponseDTO> bankStatement(UUID walletId, Pageable pageable)
+    public Page<TransactionResponseDTO> bankStatement(UUID walletId, Pageable pageable, User loggedUser)
     {
+        Wallet wallet = this.walletRepository.findById(walletId).orElseThrow(() -> {
+            throw V12WalletException.notFound("Carteira não encontrada");
+        });
+
+        if(!wallet.getUser().getId().equals(loggedUser.getId()))
+        {
+            throw V12WalletException.businessRule("Você não pode emitir extrato de uma carteira que não é sua!");
+        }
+
         Page <Transaction> pageEntitys = this.transactionRepository.findBankStatement(walletId, pageable);
         return pageEntitys.map(TransactionResponseDTO::fromEntity);
     }
