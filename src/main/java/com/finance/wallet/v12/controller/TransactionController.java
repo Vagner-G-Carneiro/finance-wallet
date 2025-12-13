@@ -34,7 +34,7 @@ public class TransactionController {
     {
         TransactionResponseDTO deposit = this.transactionService.deposit(transactionDepositDTO);
         URI uri = uriComponentsBuilder
-                .path("/transaction/{id}")
+                .path("/deposit/{id}")
                 .buildAndExpand(deposit.id())
                 .toUri();
         return ResponseEntity.created(uri).body(deposit);
@@ -47,7 +47,7 @@ public class TransactionController {
     {
         TransactionResponseDTO transfer = this.transactionService.transfer(transferDTO, loggedUser);
         URI uri = uriComponentsBuilder
-                .path("/transaction/{id}")
+                .path("/tranfer/{id}")
                 .buildAndExpand(transfer.id())
                 .toUri();
         return ResponseEntity.created(uri).body(transfer);
@@ -55,14 +55,9 @@ public class TransactionController {
 
     @GetMapping("/bankstatement")
     public ResponseEntity<Page<TransactionResponseDTO>> bankStatement(@RequestParam UUID walletId, @PageableDefault(size = 20, page = 0,
-    sort = {"createdAt"}, direction = Sort.Direction.DESC) Pageable pageable, UriComponentsBuilder uriComponentsBuilder,
-                                                                      @AuthenticationPrincipal User loggedUser)
+    sort = {"createdAt"}, direction = Sort.Direction.DESC) Pageable pageable, @AuthenticationPrincipal User loggedUser)
     {
         Page<TransactionResponseDTO> bankStatement = this.transactionService.bankStatement(walletId, pageable, loggedUser);
-        URI uri = uriComponentsBuilder
-                .path("/bankstatement/{id}")
-                .buildAndExpand(walletId)
-                .toUri();
-        return new ResponseEntity<>(bankStatement,HttpStatus.FOUND);
+        return new ResponseEntity<>(bankStatement,HttpStatus.OK);
     }
 }
