@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 
 @Service
 public class TokenService {
@@ -36,12 +35,11 @@ public class TokenService {
         try
         {
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            String decodificado =  JWT.require(algorithm)
+            return JWT.require(algorithm)
                     .withIssuer("v12-finance-wallet")
                     .build()
                     .verify(token)
                     .getSubject();
-            return decodificado;
         } catch (JWTVerificationException e) {
             throw new JWTVerificationException(e.getMessage());
         }
@@ -49,6 +47,6 @@ public class TokenService {
 
     private Instant generateExpirationDate()
     {
-        return LocalDateTime.now().plusMinutes(20).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusHours(24).toInstant(ZoneOffset.of("-03:00"));
     }
 }

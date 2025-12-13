@@ -110,7 +110,6 @@ public class TransactionService {
         {
             throw V12WalletException.businessRule("Você não pode emitir extrato de uma carteira que não é sua!");
         }
-
         Page <Transaction> pageEntitys = this.transactionRepository.findBankStatement(walletId, pageable);
         return pageEntitys.map(TransactionResponseDTO::fromEntity);
     }
