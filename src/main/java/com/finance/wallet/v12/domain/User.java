@@ -37,6 +37,9 @@ public class User implements UserDetails{
     @Column(name = "token_valid_since")
     private LocalDateTime tokenValidSince;
 
+    @Column(nullable = true)
+    private boolean active;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLES_USER"));
