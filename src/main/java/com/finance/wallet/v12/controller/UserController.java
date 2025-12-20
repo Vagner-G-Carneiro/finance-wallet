@@ -2,6 +2,8 @@ package com.finance.wallet.v12.controller;
 
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.dto.request.UserCreateDTO;
+import com.finance.wallet.v12.dto.request.UserDeleteRequestDTO;
+import com.finance.wallet.v12.dto.response.UserDeleteResponseDTO;
 import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.service.UserService;
 import jakarta.validation.Valid;
@@ -33,6 +35,13 @@ public class UserController {
                 .buildAndExpand(newUser.email())
                 .toUri();
         return ResponseEntity.created(uri).body(newUser);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO)
+    {
+        UserDeleteResponseDTO userDeleteResponseDTO = this.userService.delete(userDeleteRequestDTO);
+        return new ResponseEntity<>(userDeleteResponseDTO, HttpStatus.OK);
     }
 
     @GetMapping("/me")
