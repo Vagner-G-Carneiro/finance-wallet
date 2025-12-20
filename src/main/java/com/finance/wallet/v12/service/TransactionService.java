@@ -74,11 +74,6 @@ public class TransactionService {
         Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
                 .orElseThrow(() -> V12WalletException.businessRule("Carteira destinatária não encontrada, transferencia cancelada"));
 
-        if(walletSender.getBalance().compareTo(BigDecimal.ZERO) <= 0)
-        {
-            throw V12TransactionException.businessRule("Sem saldo suficiente para realizar a tranferencia, transação negada!");
-        }
-
         if(walletSender.getBalance().subtract(transferDTO.amount()).compareTo(BigDecimal.ZERO) < 0)
         {
             throw V12TransactionException.businessRule("Valor de transferência maior que saldo em conta, transação negada!");

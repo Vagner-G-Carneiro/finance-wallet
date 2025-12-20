@@ -7,6 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -95,6 +96,16 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Verifique o formato de entrada para valor e tente novamente!");
+        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setType(URI.create("v12bank/error/auth"));
+        log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
+        return problem;
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException run)
+    {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Metodo incompatível: " + run.getMessage());
         problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
