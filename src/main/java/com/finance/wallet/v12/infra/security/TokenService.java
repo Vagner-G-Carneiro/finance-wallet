@@ -3,6 +3,7 @@ package com.finance.wallet.v12.infra.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.finance.wallet.v12.domain.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("v12-finance-wallet")
                     .withSubject(user.getEmail())
+                    .withIssuedAt(Instant.now())
                     .withExpiresAt(generateExpirationDate())
                     .sign(algorithm);
         } catch (RuntimeException e) {
@@ -30,16 +32,16 @@ public class TokenService {
         }
     }
 
-    public String validateToken(String token)
+    public JwtPayload validateToken(String token)
     {
         try
         {
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-            return JWT.require(algorithm)
+            DecodedJWT jwt = JWT.require(algorithm)
                     .withIssuer("v12-finance-wallet")
                     .build()
-                    .verify(token)
-                    .getSubject();
+                    .verify(token);
+            return new JwtPayload(jwt.getSubject(), jwt.getIssuedAt().toInstant());
         } catch (JWTVerificationException e) {
             throw new JWTVerificationException(e.getMessage());
         }

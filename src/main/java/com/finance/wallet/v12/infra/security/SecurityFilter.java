@@ -1,5 +1,7 @@
 package com.finance.wallet.v12.infra.security;
 
+import com.finance.wallet.v12.domain.User;
+import com.finance.wallet.v12.infra.exceptions.V12SecurityException;
 import com.finance.wallet.v12.infra.exceptions.V12UserException;
 import com.finance.wallet.v12.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -9,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -19,9 +20,9 @@ import java.io.IOException;
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
-    private static TokenService tokenService;
-    private static UserRepository userRepository;
-    private static HandlerExceptionResolver handler;
+    private final TokenService tokenService;
+    private final UserRepository userRepository;
+    private final HandlerExceptionResolver handler;
 
     public SecurityFilter(TokenService tokenService, UserRepository userRepository, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handler)
     {
@@ -36,13 +37,20 @@ public class SecurityFilter extends OncePerRequestFilter {
             String token = this.recoverToken(request);
             if(token != null)
             {
-                String login = this.tokenService.validateToken(token);
-                if(!login.isEmpty())
+                JwtPayload payload = this.tokenService.validateToken(token);
+                if(payload.email() != null && !payload.email().isBlank())
                 {
-                    UserDetails user = userRepository.findByEmail(login).orElseThrow(() ->
-                            V12UserException.notFound("Usuário não encontrado: " + login));
+                    User user = userRepository.findByEmail(payload.email()).orElseThrow(() ->
+                            V12UserException.notFound("Usuário não encontrado: " + payload.email()));
+
+                    if(payload.iat().isBefore(user.getTokenValidSince()))
+                    {
+                        throw V12SecurityException.invalidToken("Token expirado! Realize um novo login!");
+                    }
+
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             user, null, user.getAuthorities());
+
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
