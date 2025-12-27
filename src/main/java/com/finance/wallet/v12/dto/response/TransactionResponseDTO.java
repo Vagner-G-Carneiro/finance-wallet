@@ -4,7 +4,7 @@ import com.finance.wallet.v12.domain.OperationType;
 import com.finance.wallet.v12.domain.Transaction;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record TransactionResponseDTO(
@@ -12,7 +12,7 @@ public record TransactionResponseDTO(
         UUID walletReceiver,
         UUID walletSender,
         BigDecimal amount,
-        LocalDateTime createdAt,
+        Instant createdAt,
         OperationType operationType
 ){
     public static TransactionResponseDTO fromEntity (Transaction transaction)
