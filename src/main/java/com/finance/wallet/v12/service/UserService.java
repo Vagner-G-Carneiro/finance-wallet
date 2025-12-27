@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 public class UserService {
@@ -48,7 +48,7 @@ public class UserService {
         newUser.setEmail(userCreateDTO.email());
         newUser.setPassword(passwordEncoder.encode(userCreateDTO.password()));
         newUser.setActive(true);
-        newUser.setTokenValidSince(LocalDateTime.now());
+        newUser.setTokenValidSince(Instant.now());
         User savedUser = this.userRepository.save(newUser);
         Wallet newWallet = new Wallet();
         newWallet.setUser(savedUser);

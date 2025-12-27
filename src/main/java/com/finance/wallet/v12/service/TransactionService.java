@@ -18,7 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -45,7 +45,7 @@ public class TransactionService {
         Transaction depositTransaction = new Transaction();
         depositTransaction.setWalletReceiver(walletReceiver);
         depositTransaction.setAmount(transation.amount());
-        depositTransaction.setCreatedAt(LocalDateTime.now());
+        depositTransaction.setCreatedAt(Instant.now());
         depositTransaction.setOperationType(OperationType.DEPOSIT);
         this.transactionRepository.save(depositTransaction);
 
@@ -88,7 +88,7 @@ public class TransactionService {
         transferTransaction.setWalletSender(walletSender);
         transferTransaction.setWalletReceiver(walletReceiver);
         transferTransaction.setAmount(transferDTO.amount());
-        transferTransaction.setCreatedAt(LocalDateTime.now());
+        transferTransaction.setCreatedAt(Instant.now());
         transferTransaction.setOperationType(OperationType.TRANSFER);
         this.transactionRepository.save(transferTransaction);
 
