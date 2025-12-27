@@ -12,8 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(businessException.getHttp(), businessException.getMessage());
         problem.setTitle(businessException.getTitle());
         problem.setType(URI.create(businessException.getType()));
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         log.error("EXCEPTION V12's => {}", businessException.getMessage());
         return problem;
     }
@@ -46,7 +45,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problem.setProperty("erros", listErros);
         problem.setTitle(method.getClass().getSimpleName());
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/api/services"));
         log.error("EXCEPTION METHOD-ARGUMENT-VALID => {}", method.getMessage());
         return problem;
@@ -56,7 +55,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleGlobalExceptions(Exception exception)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado ao lado do servidor. Contate o Suporte.");
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/global/exceptions"));
         log.error("EXCEPTION => {}", exception.getMessage(), exception);
         return problem;
@@ -66,7 +65,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleRunTimeExceptions(RuntimeException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado ao lado do servidor. Contate o Suporte.");
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/global/runtime"));
         log.error("EXCEPTION RUN-TIME=> {}", run.getMessage(), run);
         return problem;
@@ -76,7 +75,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBadCredentialsException(RuntimeException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Oops, senha / email inválidos.");
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION BAD-CREDENTIALS=> {}", run.getMessage(), run);
         return problem;
@@ -86,7 +85,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleJWTVerificationException(JWTVerificationException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Oops, seu token expirou, inicie uma nova sessão!.");
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
         return problem;
@@ -96,7 +95,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Verifique o formato de entrada para valor e tente novamente!");
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
         return problem;
@@ -106,7 +105,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException run)
     {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Metodo incompatível: " + run.getMessage());
-        problem.setProperty("timestamp", LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);
         return problem;
