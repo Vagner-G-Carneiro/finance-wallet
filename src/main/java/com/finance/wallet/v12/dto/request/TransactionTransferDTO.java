@@ -7,10 +7,11 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record TransactionTransferDTO(
-        @NotBlank
+        @NotBlank(message = "Carteira cededora é obrigatório para a tranferencia!")
         UUID walletSender,
-        @NotBlank
+        @NotBlank(message = "Carteira receptora é obrigatório para a tranferencia!")
         UUID walletReceiver,
-        @Positive
+        @Positive(message = "Valor de depósito precisa ser positivo!")
+        @NotBlank(message = "Valor de depósito precisa ser expecificado")
         BigDecimal amount
 ){}

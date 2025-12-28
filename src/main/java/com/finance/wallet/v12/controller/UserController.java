@@ -1,10 +1,17 @@
 package com.finance.wallet.v12.controller;
 
+import com.finance.wallet.v12.domain.User;
+import com.finance.wallet.v12.dto.request.UserChangePasswordRequestDTO;
 import com.finance.wallet.v12.dto.request.UserCreateDTO;
+import com.finance.wallet.v12.dto.request.UserDeleteRequestDTO;
+import com.finance.wallet.v12.dto.response.UserChangePasswordResponseDTO;
+import com.finance.wallet.v12.dto.response.UserDeleteResponseDTO;
 import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,15 +28,35 @@ public class UserController {
         this.userService = userService;
     }
 
-
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserCreateDTO data, UriComponentsBuilder uriComponentsBuilder)
     {
         UserResponseDTO newUser = this.userService.create(data);
         URI uri = uriComponentsBuilder
                 .path("/user/{id}")
-                .buildAndExpand(newUser.id())
+                .buildAndExpand(newUser.email())
                 .toUri();
         return ResponseEntity.created(uri).body(newUser);
+    }
+
+    @PutMapping("/change_password")
+    public ResponseEntity<UserChangePasswordResponseDTO> changePassword (@RequestBody @Valid UserChangePasswordRequestDTO userRequest,
+                                                                         @AuthenticationPrincipal User loggedUser)
+    {
+        UserChangePasswordResponseDTO userResponse = this.userService.changePassword(userRequest, loggedUser);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO, @AuthenticationPrincipal User loggedUser)
+    {
+        UserDeleteResponseDTO userDeleteResponseDTO = this.userService.delete(userDeleteRequestDTO, loggedUser);
+        return new ResponseEntity<>(userDeleteResponseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> returnsUser(@AuthenticationPrincipal User user, UriComponentsBuilder uriComponentsBuilder)
+    {
+        return new ResponseEntity<>(UserResponseDTO.fromEntity(user), HttpStatus.OK);
     }
 }

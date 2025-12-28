@@ -20,6 +20,10 @@ public class Wallet {
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "wallet_status", nullable = false)
+    private WalletStatus walletStatus;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
