@@ -1,8 +1,10 @@
 package com.finance.wallet.v12.controller;
 
 import com.finance.wallet.v12.domain.User;
+import com.finance.wallet.v12.dto.request.UserChangePasswordRequestDTO;
 import com.finance.wallet.v12.dto.request.UserCreateDTO;
 import com.finance.wallet.v12.dto.request.UserDeleteRequestDTO;
+import com.finance.wallet.v12.dto.response.UserChangePasswordResponseDTO;
 import com.finance.wallet.v12.dto.response.UserDeleteResponseDTO;
 import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.service.UserService;
@@ -37,10 +39,18 @@ public class UserController {
         return ResponseEntity.created(uri).body(newUser);
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO)
+    @PutMapping("/change_password")
+    public ResponseEntity<UserChangePasswordResponseDTO> changePassword (@RequestBody @Valid UserChangePasswordRequestDTO userRequest,
+                                                                         @AuthenticationPrincipal User loggedUser)
     {
-        UserDeleteResponseDTO userDeleteResponseDTO = this.userService.delete(userDeleteRequestDTO);
+        UserChangePasswordResponseDTO userResponse = this.userService.changePassword(userRequest, loggedUser);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO, @AuthenticationPrincipal User loggedUser)
+    {
+        UserDeleteResponseDTO userDeleteResponseDTO = this.userService.delete(userDeleteRequestDTO, loggedUser);
         return new ResponseEntity<>(userDeleteResponseDTO, HttpStatus.OK);
     }
 
