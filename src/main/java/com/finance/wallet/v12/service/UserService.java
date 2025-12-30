@@ -1,5 +1,6 @@
 package com.finance.wallet.v12.service;
 
+import com.finance.wallet.v12.domain.Money;
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
 import com.finance.wallet.v12.domain.WalletStatus;
@@ -53,7 +54,7 @@ public class UserService {
         User savedUser = this.userRepository.save(newUser);
         Wallet newWallet = new Wallet();
         newWallet.setUser(savedUser);
-        newWallet.setBalance(BigDecimal.ZERO);
+        newWallet.setBalance(Money.zero());
         newWallet.setWalletStatus(WalletStatus.ACTIVE);
         this.walletRepository.save(newWallet);
 
@@ -72,7 +73,7 @@ public class UserService {
         Wallet wallet = this.walletRepository.findByUserId(user.getId())
                 .orElseThrow(() -> V12WalletException.notFound("Erro ao encontrar carteira de usuário."));
 
-        if (wallet.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+        if (wallet.getBalance().compareTo(Money.zero()) > 0) {
             throw V12WalletException.businessRule("Para excluir sua conta, primeiro precisa zerar ou tranferir o saldo em carteira.");
         }
 

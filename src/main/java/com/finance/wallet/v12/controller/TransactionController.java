@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/transations")
+@RequestMapping("/transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;

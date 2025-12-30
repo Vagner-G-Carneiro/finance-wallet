@@ -1,8 +1,7 @@
 package com.finance.wallet.v12.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import com.finance.wallet.v12.domain.Money;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +11,7 @@ public record TransactionDepositDTO(
         @NotBlank(message = "Carteira receptora é obrigatório para o depósito!")
         UUID walletReceiver,
         @NotBlank(message = "Valor de depósito precisa ser expecificado")
-        @Positive(message = "Valor de depósito precisa ser sempre maior que 0.")
+        @Digits(integer = 19, fraction = 2)
+        @DecimalMin(value = "0.00", inclusive = false, message = "Valor de transação precisa ser maior que zero.")
         BigDecimal amount
 ){}
