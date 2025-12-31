@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -73,5 +73,16 @@ public class User implements UserDetails{
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public static User createUser(String name, String cpf, String  email, String password) {
+        User  user = new User();
+        user.name = name;
+        user.cpf = cpf;
+        user.email = email;
+        user.password = password;
+        user.tokenValidSince = Instant.now();
+        user.active = true;
+        return user;
     }
 }

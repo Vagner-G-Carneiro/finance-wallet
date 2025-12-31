@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Wallet {
 
     @Id
@@ -24,7 +24,7 @@ public class Wallet {
                     name = "balance"
             )
     )
-    private Money balance = Money.zero();
+    private Money balance;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "wallet_status", nullable = false)
@@ -34,9 +34,17 @@ public class Wallet {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    public static Wallet createWallet(User user) {
+        Wallet wallet = new Wallet();
+        wallet.balance = Money.zero();
+        wallet.user = user;
+        wallet.setWalletStatus(WalletStatus.ACTIVE);
+        return wallet;
+    }
+
     public void deposit(Money amount){
         if(!amount.isGreaterThan(Money.zero())){
-            throw V12WalletException.businessRule("Impossível depositar um valor menor ou igual a zero");
+            throw V12WalletException.businessRule("Impossivel depositar um valor menor ou igual a zero");
         }
         this.balance = this.balance.add(amount);
     }
