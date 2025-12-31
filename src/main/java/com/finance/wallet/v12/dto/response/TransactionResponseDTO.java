@@ -22,7 +22,7 @@ public record TransactionResponseDTO(
                 transaction.getWalletReceiver().getId(),
                 transaction.getWalletSender() != null ?
                         transaction.getWalletSender().getId() : null,
-                transaction.getAmount(),
+                transaction.getAmount().toBigDecimal(),
                 transaction.getCreatedAt(),
                 transaction.getOperationType()
         );

@@ -1,9 +1,6 @@
 package com.finance.wallet.v12.service;
 
-import com.finance.wallet.v12.domain.OperationType;
-import com.finance.wallet.v12.domain.Transaction;
-import com.finance.wallet.v12.domain.User;
-import com.finance.wallet.v12.domain.Wallet;
+import com.finance.wallet.v12.domain.*;
 import com.finance.wallet.v12.dto.request.TransactionDepositDTO;
 import com.finance.wallet.v12.dto.request.TransactionTransferDTO;
 import com.finance.wallet.v12.dto.response.TransactionResponseDTO;
@@ -17,8 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -42,15 +37,11 @@ public class TransactionService {
         Wallet walletReceiver = this.walletRepository.findByIdWithLock(transation.walletReceiver())
                 .orElseThrow(() -> V12WalletException.notFound("Carteira destinatária não encontrada."));
 
-        Transaction depositTransaction = new Transaction();
-        depositTransaction.setWalletReceiver(walletReceiver);
-        depositTransaction.setAmount(transation.amount());
-        depositTransaction.setCreatedAt(Instant.now());
-        depositTransaction.setOperationType(OperationType.DEPOSIT);
-        this.transactionRepository.save(depositTransaction);
+        Money amount = Money.of(transation.amount());
+        walletReceiver.deposit(amount);
+        Transaction depositTransaction = Transaction.createDeposit(walletReceiver, amount);
 
-        BigDecimal newAmount = walletReceiver.getBalance().add(transation.amount());
-        walletReceiver.setBalance(newAmount);
+        this.transactionRepository.save(depositTransaction);
         this.walletRepository.save(walletReceiver);
         return TransactionResponseDTO.fromEntity(depositTransaction);
     }
@@ -58,12 +49,19 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDTO transfer(TransactionTransferDTO transferDTO, User loggedUser)
     {
+        Money amount = Money.of(transferDTO.amount());
+
         Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
                 .orElseThrow(() -> V12WalletException.notFound("Carteira remetente não encontrada, transferencia cancelada."));
 
         if(!walletSender.getUser().getId().equals(loggedUser.getId()))
         {
             throw V12WalletException.businessRule("Você só pode fazer tranferencias da sua própria carteira!");
+        }
+
+        if(!walletSender.getWalletStatus().equals(WalletStatus.ACTIVE))
+        {
+            throw V12WalletException.businessRule("Carteira remetente desativada.");
         }
 
         if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
@@ -74,22 +72,17 @@ public class TransactionService {
         Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
                 .orElseThrow(() -> V12WalletException.businessRule("Carteira destinatária não encontrada, transferencia cancelada"));
 
-        if(walletSender.getBalance().subtract(transferDTO.amount()).compareTo(BigDecimal.ZERO) < 0)
+        if(!walletReceiver.getWalletStatus().equals(WalletStatus.ACTIVE))
         {
-            throw V12TransactionException.businessRule("Valor de transferência maior que saldo em conta, transação negada!");
+            throw V12WalletException.businessRule("Carteira destinatária desativada.");
         }
 
-        walletSender.setBalance(walletSender.getBalance().subtract(transferDTO.amount()));
-        walletReceiver.setBalance(walletReceiver.getBalance().add(transferDTO.amount()));
+        walletSender.withdraw(amount);
+        walletReceiver.deposit(amount);
+        Transaction transferTransaction = Transaction.createTransfer(walletSender, walletReceiver, amount);
+
         this.walletRepository.save(walletReceiver);
         this.walletRepository.save(walletSender);
-
-        Transaction transferTransaction = new Transaction();
-        transferTransaction.setWalletSender(walletSender);
-        transferTransaction.setWalletReceiver(walletReceiver);
-        transferTransaction.setAmount(transferDTO.amount());
-        transferTransaction.setCreatedAt(Instant.now());
-        transferTransaction.setOperationType(OperationType.TRANSFER);
         this.transactionRepository.save(transferTransaction);
 
         return TransactionResponseDTO.fromEntity(transferTransaction);

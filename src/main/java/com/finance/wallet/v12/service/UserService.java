@@ -1,5 +1,6 @@
 package com.finance.wallet.v12.service;
 
+import com.finance.wallet.v12.domain.Money;
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
 import com.finance.wallet.v12.domain.WalletStatus;
@@ -43,18 +44,11 @@ public class UserService {
             throw V12UserException.businessRule("Este email já está cadastrado.");
         }
 
-        User newUser = new User();
-        newUser.setCpf(userCreateDTO.cpf());
-        newUser.setName(userCreateDTO.name());
-        newUser.setEmail(userCreateDTO.email());
-        newUser.setPassword(passwordEncoder.encode(userCreateDTO.password()));
-        newUser.setActive(true);
-        newUser.setTokenValidSince(Instant.now());
+        String hashPassword = passwordEncoder.encode(userCreateDTO.password());
+        User newUser = User.createUser(userCreateDTO.name(), userCreateDTO.cpf(), userCreateDTO.email(), hashPassword);
         User savedUser = this.userRepository.save(newUser);
-        Wallet newWallet = new Wallet();
-        newWallet.setUser(savedUser);
-        newWallet.setBalance(BigDecimal.ZERO);
-        newWallet.setWalletStatus(WalletStatus.ACTIVE);
+
+        Wallet newWallet = Wallet.createWallet(savedUser);
         this.walletRepository.save(newWallet);
 
         return UserResponseDTO.fromEntity(savedUser);
@@ -72,7 +66,7 @@ public class UserService {
         Wallet wallet = this.walletRepository.findByUserId(user.getId())
                 .orElseThrow(() -> V12WalletException.notFound("Erro ao encontrar carteira de usuário."));
 
-        if (wallet.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+        if (wallet.getBalance().compareTo(Money.zero()) > 0) {
             throw V12WalletException.businessRule("Para excluir sua conta, primeiro precisa zerar ou tranferir o saldo em carteira.");
         }
 
