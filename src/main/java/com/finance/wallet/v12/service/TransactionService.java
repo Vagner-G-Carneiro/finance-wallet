@@ -51,26 +51,41 @@ public class TransactionService {
     {
         Money amount = Money.of(transferDTO.amount());
 
-        Wallet walletSender = this.walletRepository.findByIdWithLock(transferDTO.walletSender())
-                .orElseThrow(() -> V12WalletException.notFound("Carteira remetente não encontrada, transferencia cancelada."));
-
-        if(!walletSender.getUser().getId().equals(loggedUser.getId()))
+        if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
         {
-            throw V12WalletException.businessRule("Você só pode fazer tranferencias da sua própria carteira!");
+            throw V12TransactionException.businessRule("Você não pode transitar dinheiro de uma carteira para ela mesma!");
         }
+
+        UUID firstLock;
+        UUID secondLock;
+
+        if(transferDTO.walletSender().compareTo(transferDTO.walletReceiver()) < 0)
+        {
+            firstLock = transferDTO.walletSender();
+            secondLock = transferDTO.walletReceiver();
+        } else {
+            firstLock = transferDTO.walletReceiver();
+            secondLock = transferDTO.walletSender();
+        }
+
+        Wallet firstLockWallet = this.walletRepository.findByIdWithLock(firstLock)
+            .orElseThrow(() -> V12TransactionException.notFound("Carteira " + firstLock + "não encontrada, transação negada"));
+
+        Wallet secondLockWallet = this.walletRepository.findByIdWithLock(secondLock)
+            .orElseThrow(() -> V12TransactionException.notFound("Carteira " + secondLock + " não encontrada, transação negada"));
+
+        Wallet walletSender = transferDTO.walletSender().equals(firstLock) ? firstLockWallet : secondLockWallet;
+        Wallet walletReceiver = walletSender.getId().equals(firstLock) ? secondLockWallet : firstLockWallet;
 
         if(!walletSender.getWalletStatus().equals(WalletStatus.ACTIVE))
         {
             throw V12WalletException.businessRule("Carteira remetente desativada.");
         }
 
-        if(transferDTO.walletSender().equals(transferDTO.walletReceiver()))
+        if(!walletSender.getUser().getId().equals(loggedUser.getId()))
         {
-            throw V12TransactionException.businessRule("Impossível transferir dinheiro da própria carteira para ela mesma, transação negada!");
+            throw V12WalletException.businessRule("Você só pode fazer tranferencias da sua própria carteira!");
         }
-
-        Wallet walletReceiver = this.walletRepository.findById(transferDTO.walletReceiver())
-                .orElseThrow(() -> V12WalletException.businessRule("Carteira destinatária não encontrada, transferencia cancelada"));
 
         if(!walletReceiver.getWalletStatus().equals(WalletStatus.ACTIVE))
         {
