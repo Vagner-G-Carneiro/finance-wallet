@@ -5,9 +5,7 @@ import com.finance.wallet.v12.infra.exceptions.V12WalletException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity(name = "transactions")

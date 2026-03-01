@@ -1,10 +1,8 @@
 package com.finance.wallet.v12.dto.request;
 
-import com.finance.wallet.v12.domain.Money;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record TransactionDepositDTO(

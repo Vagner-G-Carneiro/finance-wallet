@@ -7,7 +7,6 @@ import com.finance.wallet.v12.dto.response.TransactionResponseDTO;
 import com.finance.wallet.v12.infra.exceptions.V12TransactionException;
 import com.finance.wallet.v12.infra.exceptions.V12WalletException;
 import com.finance.wallet.v12.repository.TransactionRepository;
-import com.finance.wallet.v12.repository.UserRepository;
 import com.finance.wallet.v12.repository.WalletRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -21,13 +20,11 @@ public class TransactionService {
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
 
-    public TransactionService(WalletRepository walletRepository, TransactionRepository transactionRepository, UserRepository userRepository)
+    public TransactionService(WalletRepository walletRepository, TransactionRepository transactionRepository)
     {
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
 
     }
 
