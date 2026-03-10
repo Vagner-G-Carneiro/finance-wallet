@@ -94,7 +94,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException run)
     {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Verifique o formato de entrada para valor e tente novamente!");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Verifique o formato de entrada para o valor [. ao invés de ,] ou carteira [chave correta] e tente novamente!");
         problem.setProperty("timestamp", Instant.now());
         problem.setType(URI.create("v12bank/error/auth"));
         log.error("EXCEPTION TOKEN-EXPIRED-EXCEPTION {}", run.getMessage(), run);

@@ -41,9 +41,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "users/register").permitAll()
-                        .anyRequest().authenticated()
-                ).addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class).
+                        .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
+                        .anyRequest().authenticated())
+                    .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                        (request, response, authExceptio) -> response.sendError(401, "Erro na URL da requisição")
+                    ))
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class).
                 build();
     }
 

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/transactions")
@@ -42,8 +41,7 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponseDTO> transfer(@RequestBody TransactionTransferDTO transferDTO,
-                                                           UriComponentsBuilder uriComponentsBuilder,
-                                                           @AuthenticationPrincipal User loggedUser)
+    UriComponentsBuilder uriComponentsBuilder, @AuthenticationPrincipal User loggedUser)
     {
         TransactionResponseDTO transfer = this.transactionService.transfer(transferDTO, loggedUser);
         URI uri = uriComponentsBuilder
@@ -54,10 +52,10 @@ public class TransactionController {
     }
 
     @GetMapping("/bankstatement")
-    public ResponseEntity<Page<TransactionResponseDTO>> bankStatement(@RequestParam UUID walletId, @PageableDefault(size = 20, page = 0,
+    public ResponseEntity<Page<TransactionResponseDTO>> bankStatement(@PageableDefault(size = 20, page = 0,
     sort = {"createdAt"}, direction = Sort.Direction.DESC) Pageable pageable, @AuthenticationPrincipal User loggedUser)
     {
-        Page<TransactionResponseDTO> bankStatement = this.transactionService.bankStatement(walletId, pageable, loggedUser);
+        Page<TransactionResponseDTO> bankStatement = this.transactionService.bankStatement(pageable, loggedUser);
         return new ResponseEntity<>(bankStatement,HttpStatus.OK);
     }
 }

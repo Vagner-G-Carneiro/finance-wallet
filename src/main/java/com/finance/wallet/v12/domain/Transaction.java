@@ -43,18 +43,31 @@ public class Transaction {
     @Column(name = "operation_type", nullable = false)
     private OperationType operationType;
 
-    private static void  validateAmount(Wallet walletSender, Wallet walletReceiver, Money amount) {
+    private static void  validateAmount(Money amount) {
         if(!amount.isGreaterThan(Money.zero())){
             throw V12WalletException.businessRule("Impossível existir uma transação com saldo menor ou igual a zero.");
         }
+    }
 
-        if(walletSender != null && walletSender.getId().equals(walletReceiver.getId())) {
-            throw V12TransactionException.businessRule("Uma carteira não pode fazer transação para sí mesma.");
+    private static void validateTransfer(Wallet walletSender, Wallet walletReceiver)
+    {
+        Wallet.validateWallet(walletSender, walletReceiver);
+        if(walletSender.getId().equals(walletReceiver.getId()))
+        {
+            throw V12TransactionException.businessRule("Você não pode realizar tranferencias de uma carteira para ela mesma!");
         }
     }
 
+    private static void transfer(Wallet walletSender, Wallet walletReceiver, Money amount)
+    {
+        validateAmount(amount);
+        validateTransfer(walletSender, walletReceiver);
+        walletSender.withdraw(amount);
+        walletReceiver.deposit(amount);
+    }
+
     public static Transaction createTransfer(Wallet walletSender, Wallet walletReceiver, Money amount) {
-        validateAmount(walletSender, walletReceiver, amount);
+        transfer(walletSender, walletReceiver, amount);
         Transaction transaction = new Transaction();
         transaction.walletSender = walletSender;
         transaction.walletReceiver = walletReceiver;
@@ -65,7 +78,7 @@ public class Transaction {
     }
 
     public static Transaction createDeposit(Wallet walletReceiver, Money amount) {
-        validateAmount(null, walletReceiver, amount);
+        validateAmount(amount);
         Transaction transaction = new Transaction();
         transaction.walletSender = null;
         transaction.walletReceiver = walletReceiver;

@@ -49,10 +49,32 @@ public class Wallet {
         this.balance = this.balance.add(amount);
     }
 
-    public void  withdraw(Money amount){
+    public void withdraw(Money amount){
         if(this.balance.isLessThan(amount)){
             throw V12WalletException.businessRule("Valor de retirada maior que o valor em saldo da cateira.");
         }
         this.balance = this.balance.subtract(amount);
     }
+
+    public static void validateWallet(Wallet wallet)
+    {
+        if(!wallet.walletStatus.equals(WalletStatus.ACTIVE))
+        {
+            throw V12WalletException.businessRule("Carteira " + wallet.id + "inoperante.");
+        }
+    }
+
+    public static void validateWallet(Wallet walletSender, Wallet walletReceiver)
+    {
+        if(!walletSender.walletStatus.equals(WalletStatus.ACTIVE))
+        {
+            throw V12WalletException.businessRule("Carteira " + walletSender.id + "inoperante.");
+        }
+
+        if(!walletReceiver.walletStatus.equals(WalletStatus.ACTIVE))
+        {
+            throw V12WalletException.businessRule("Carteira " + walletReceiver.id + "inoperante.");
+        }
+    }
+
 }
