@@ -62,4 +62,6 @@ segurança e concorrência, simulando operações financeiras reais.
 
 Projeto desenvolvido com foco em aprendizado prático de
 back-end, arquitetura, segurança e concorrência em aplicações Java.
+O foco pós desenvolvimento do mesmo seria criar o sistema de Deploy com CI/CD
+Além de implementar proteções contra o OWASP 10 e subir para Nuvem a API Simples
 
