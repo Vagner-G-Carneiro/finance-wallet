@@ -1,5 +1,6 @@
 package com.finance.wallet.v12.controller;
 
+import com.finance.wallet.v12.controller.api.UserApi;
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.dto.request.UserChangePasswordRequestDTO;
 import com.finance.wallet.v12.dto.request.UserCreateDTO;
@@ -9,54 +10,62 @@ import com.finance.wallet.v12.dto.response.UserDeleteResponseDTO;
 import com.finance.wallet.v12.dto.response.UserResponseDTO;
 import com.finance.wallet.v12.service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
-@RestController
-@RequestMapping("/users")
-public class UserController {
+@RequiredArgsConstructor
+public class UserController implements UserApi {
 
     private final UserService userService;
 
-    public UserController(UserService userService)
+    @Override
+    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserCreateDTO data,
+                                                  UriComponentsBuilder uriComponentsBuilder)
     {
-        this.userService = userService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserCreateDTO data, UriComponentsBuilder uriComponentsBuilder)
-    {
-        UserResponseDTO newUser = this.userService.create(data);
+        var user = userService.create(data);
         URI uri = uriComponentsBuilder
                 .path("/user/{id}")
-                .buildAndExpand(newUser.email())
+                .buildAndExpand(data.email())
                 .toUri();
-        return ResponseEntity.created(uri).body(newUser);
+        return ResponseEntity.created(uri).body(user);
     }
 
-    @PutMapping("/change_password")
-    public ResponseEntity<UserChangePasswordResponseDTO> changePassword (@RequestBody @Valid UserChangePasswordRequestDTO userRequest,
+    @Override
+    public ResponseEntity<UserChangePasswordResponseDTO> changePassword (@RequestBody @Valid UserChangePasswordRequestDTO request,
                                                                          @AuthenticationPrincipal User loggedUser)
     {
-        UserChangePasswordResponseDTO userResponse = this.userService.changePassword(userRequest, loggedUser);
-        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+        var userResponse = this.userService.changePassword(request, loggedUser);
+        return ResponseEntity.ok(userResponse);
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO, @AuthenticationPrincipal User loggedUser)
+    @Override
+    public ResponseEntity<UserDeleteResponseDTO> delete (@RequestBody @Valid UserDeleteRequestDTO userDeleteRequestDTO,
+                                                         @AuthenticationPrincipal User loggedUser)
     {
-        UserDeleteResponseDTO userDeleteResponseDTO = this.userService.delete(userDeleteRequestDTO, loggedUser);
-        return new ResponseEntity<>(userDeleteResponseDTO, HttpStatus.OK);
+        var response = this.userService.delete(userDeleteRequestDTO, loggedUser);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/me")
+    /*
+     *  TODO Entendo que em uma api real, esse endpoint seria um problema grave de segurança, não e função
+     *   da api retornar o usuario logado e sim apenas logar ou retornar que a sessao expirou, quem tem
+     *   acesso aos dados do usuario e o front via o token JWT que vc gera nesse token vc pode colocar o nome do usuario
+     *   e mais informações que achar melhor, ele ja fica protegido e nao exposto.
+     */
+    @Deprecated
+    @Override
     public ResponseEntity<UserResponseDTO> returnsUser(@AuthenticationPrincipal User user, UriComponentsBuilder uriComponentsBuilder)
     {
-        return new ResponseEntity<>(UserResponseDTO.fromEntity(user), HttpStatus.OK);
+
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
     }
 }

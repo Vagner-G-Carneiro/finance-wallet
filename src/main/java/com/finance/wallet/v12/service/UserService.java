@@ -3,7 +3,7 @@ package com.finance.wallet.v12.service;
 import com.finance.wallet.v12.domain.Money;
 import com.finance.wallet.v12.domain.User;
 import com.finance.wallet.v12.domain.Wallet;
-import com.finance.wallet.v12.domain.WalletStatus;
+import com.finance.wallet.v12.domain.enums.WalletStatus;
 import com.finance.wallet.v12.dto.request.UserChangePasswordRequestDTO;
 import com.finance.wallet.v12.dto.request.UserCreateDTO;
 import com.finance.wallet.v12.dto.request.UserDeleteRequestDTO;

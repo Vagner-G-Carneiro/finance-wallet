@@ -1,7 +1,8 @@
 package com.finance.wallet.v12.dto.response;
 
-import com.finance.wallet.v12.domain.OperationType;
-import com.finance.wallet.v12.domain.Transaction;
+
+import com.finance.wallet.v12.domain.db.entity.Transaction;
+import com.finance.wallet.v12.domain.enums.OperationType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,9 +20,9 @@ public record TransactionResponseDTO(
     {
         return new TransactionResponseDTO(
                 transaction.getId(),
-                transaction.getWalletReceiver().getId(),
-                transaction.getWalletSender() != null ?
-                        transaction.getWalletSender().getId() : null,
+                transaction.getTarget().getId(),
+                transaction.getSource() != null ?
+                        transaction.getSource().getId() : null,
                 transaction.getAmount().toBigDecimal(),
                 transaction.getCreatedAt(),
                 transaction.getOperationType()

@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class V12WalletException extends V12BusinessException {
     public V12WalletException(String message, HttpStatus httpStatus) {
-        super(message, "Wallet-Exception", httpStatus);
+        super(message, httpStatus);
     }
 }

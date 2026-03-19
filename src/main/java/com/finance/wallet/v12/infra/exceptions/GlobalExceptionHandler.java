@@ -1,7 +1,11 @@
 package com.finance.wallet.v12.infra.exceptions;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.finance.wallet.v12.domain.enums.ErrorInfo;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,18 +21,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private static Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private final MessageSource messageSource;
+
+
     @ExceptionHandler(V12BusinessException.class)
-    public ProblemDetail handleAllV12Exceptions(V12BusinessException businessException)
+    public ProblemDetail handleAllV12Exceptions(V12BusinessException ex)
     {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(businessException.getHttp(), businessException.getMessage());
-        problem.setTitle(businessException.getTitle());
-        problem.setType(URI.create(businessException.getType()));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getHttp(), ex.getMessage());
+
+        ErrorInfo errorInfo = ex.getErrorInfo();
+        String title = messageSource.getMessage(errorInfo.getMessage(), null, LocaleContextHolder.getLocale());
+        problem.setTitle(title);
+        problem.setType(URI.create(ex.getType()));
         problem.setProperty("timestamp", Instant.now());
-        log.error("EXCEPTION V12's => {}", businessException.getMessage());
+        problem.setProperty("code", errorInfo.getCode());
+        log.error("Business exception: ", ex);
         return problem;
     }
 

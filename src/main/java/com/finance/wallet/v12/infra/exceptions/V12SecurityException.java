@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class V12SecurityException extends V12BusinessException{
     public V12SecurityException(String message, HttpStatus httpStatus) {
-        super(message, "Security Exception", httpStatus);
+        super(message, httpStatus);
     }
 
     public static V12SecurityException invalidToken(String message)

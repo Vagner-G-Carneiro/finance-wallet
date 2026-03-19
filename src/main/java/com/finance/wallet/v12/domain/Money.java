@@ -1,11 +1,13 @@
 package com.finance.wallet.v12.domain;
 
+import com.finance.wallet.v12.domain.enums.BusinessError;
 import com.finance.wallet.v12.infra.exceptions.V12MoneyException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 @Embeddable
 public class Money implements Comparable<Money>{
@@ -26,7 +28,7 @@ public class Money implements Comparable<Money>{
     public static Money of(BigDecimal value) {
         if(value == null || value.scale() > 2)
         {
-            throw V12MoneyException.businessRule("Formato inválido. Criação do objeto Money impossibilitada.");
+            throw V12MoneyException.businessRule("Value money must not be null or scale greater that 2.", BusinessError.MONEY_PARSE_ERROR);
         }
         return new Money(value);
     }

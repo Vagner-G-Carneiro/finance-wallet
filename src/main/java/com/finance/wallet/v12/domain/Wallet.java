@@ -1,29 +1,24 @@
 package com.finance.wallet.v12.domain;
+
+import com.finance.wallet.v12.domain.db.entity.AbstractEntity;
+import com.finance.wallet.v12.domain.enums.BusinessError;
+import com.finance.wallet.v12.domain.enums.WalletStatus;
 import com.finance.wallet.v12.infra.exceptions.V12WalletException;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
-@Entity(name = "wallets")
+@Builder(toBuilder = true, builderClassName = "Builder")
 @Table(name = "wallets")
 @Getter
-@Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Wallet {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+@NoArgsConstructor
+public class Wallet extends AbstractEntity {
 
     @Embedded
-    @AttributeOverride(
-            name = "value",
-            column = @Column (
-                    name = "balance"
-            )
-    )
+    @AttributeOverride(name = "value", column = @Column(name = "balance"))
     private Money balance;
 
     @Enumerated(EnumType.STRING)
@@ -34,47 +29,24 @@ public class Wallet {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public static Wallet createWallet(User user) {
-        Wallet wallet = new Wallet();
-        wallet.balance = Money.zero();
-        wallet.user = user;
-        wallet.setWalletStatus(WalletStatus.ACTIVE);
-        return wallet;
-    }
-
-    public void deposit(Money amount){
-        if(!amount.isGreaterThan(Money.zero())){
-            throw V12WalletException.businessRule("Impossivel depositar um valor menor ou igual a zero");
+    public void deposit(Money amount) {
+        if (!amount.isGreaterThan(Money.zero())) {
+            throw V12WalletException.businessRule("Balance is less than zero", BusinessError.INVALID_AMOUNT);
         }
         this.balance = this.balance.add(amount);
     }
 
-    public void withdraw(Money amount){
-        if(this.balance.isLessThan(amount)){
-            throw V12WalletException.businessRule("Valor de retirada maior que o valor em saldo da cateira.");
+    public void withdraw(final Money amount) {
+        Objects.requireNonNull(amount, "Amount must not be null.");
+        if (this.balance.isLessThan(amount)) {
+            throw V12WalletException.businessRule("Balance is less than %d".formatted(amount.toBigDecimal().intValue()), BusinessError.INSUFFICIENT_BALANCE);
         }
         this.balance = this.balance.subtract(amount);
     }
 
-    public static void validateWallet(Wallet wallet)
-    {
-        if(!wallet.walletStatus.equals(WalletStatus.ACTIVE))
-        {
-            throw V12WalletException.businessRule("Carteira " + wallet.id + "inoperante.");
-        }
-    }
-
-    public static void validateWallet(Wallet walletSender, Wallet walletReceiver)
-    {
-        if(!walletSender.walletStatus.equals(WalletStatus.ACTIVE))
-        {
-            throw V12WalletException.businessRule("Carteira " + walletSender.id + "inoperante.");
-        }
-
-        if(!walletReceiver.walletStatus.equals(WalletStatus.ACTIVE))
-        {
-            throw V12WalletException.businessRule("Carteira " + walletReceiver.id + "inoperante.");
-        }
+    public void validate() {
+        if (walletStatus == WalletStatus.ACTIVE)
+            throw V12WalletException.businessRule("Wallet ID %s is invalid ".formatted(id), BusinessError.INVALID_WALLET_STATUS);
     }
 
 }

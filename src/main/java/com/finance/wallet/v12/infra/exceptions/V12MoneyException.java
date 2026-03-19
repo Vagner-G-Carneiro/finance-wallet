@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class V12MoneyException extends V12BusinessException {
     public V12MoneyException(String message, HttpStatus status) {
-        super(message, "Money Exception", status);
+        super(message, status);
     }
 }

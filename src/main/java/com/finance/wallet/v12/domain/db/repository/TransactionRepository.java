@@ -1,6 +1,6 @@
-package com.finance.wallet.v12.repository;
+package com.finance.wallet.v12.domain.db.repository;
 
-import com.finance.wallet.v12.domain.Transaction;
+import com.finance.wallet.v12.domain.db.entity.Transaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
